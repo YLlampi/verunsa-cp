@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block head_title %}Conectar cuenta UNSA{% endblock %}
+
+{% block extra_css %}
+<style>
+    {#/* Fondo con patrón sutil para dar textura */#}
+    body {
+        background-color: #f4f6f8;
+        background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+        background-size: 24px 24px;
+    }
+
+    .auth-card {
+        border: none;
+        border-radius: 24px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+        transition: transform 0.3s ease;
+    }
+
+    .logo-circle {
+        width: 70px;
+        height: 70px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #fff;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        border: 1px solid rgba(0,0,0,0.05);
+        z-index: 2;
+    }
+
+    {#/* Línea de conexión animada */#}
+    .connection-line {
+        flex-grow: 1;
+        height: 2px;
+        background: #e9ecef;
+        margin: 0 15px;
+        position: relative;
+    }
+
+    .connection-dot {
+        width: 8px;
+        height: 8px;
+        background-color: #8B0000;
+        border-radius: 50%;
+        position: absolute;
+        top: 50%;
+        left: 0;
+        transform: translateY(-50%);
+        animation: moveDot 2s infinite ease-in-out;
+    }
+
+    @keyframes moveDot {
+        0% { left: 0; opacity: 0; }
+        50% { opacity: 1; }
+        100% { left: 100%; opacity: 0; }
+    }
+
+    .btn-google-connect {
+        background-color: #1a1a1a;
+        color: white;
+        border: none;
+        padding: 12px;
+        border-radius: 12px;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+
+    .btn-google-connect:hover {
+        background-color: #ffffff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center align-items-center" style="min-height: 80vh;">
+        <div class="col-md-5 col-lg-4">
+
+            <div class="auth-card bg-white p-5 text-center">
+
+                <div class="d-flex justify-content-between align-items-center mb-5 position-relative">
+
+                    <div class="logo-circle">
+                        <img src="{% static 'resources/cropped-LogoUNSAFav-192x192.png' %}"
+                             alt="UNSA" style="width: 40px; height: 40px; object-fit: contain;">
+                    </div>
+
+                    <div class="connection-line">
+                        <div class="connection-dot"></div>
+                    </div>
+
+                    <div class="logo-circle">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/2048px-Google_%22G%22_logo.svg.png"
+                             alt="Google" style="width: 32px; height: 32px;">
+                    </div>
+                </div>
+
+                <h3 class="fw-bold mb-2 text-dark">Validemos tu identidad</h3>
+                <p class="text-muted mb-4 small">
+                    Para asegurar que eres estudiante de la UNSA, necesitamos confirmar tu cuenta institucional.
+                </p>
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="d-grid gap-3">
+                        <button type="submit" class="btn btn-google-connect btn-lg fs-6">
+                            <span>Continuar con {{ provider.name }}</span>
+                            <i class="fas fa-arrow-right ms-2 small"></i>
+                        </button>
+
+                        <a href="{% url 'frontend:landing' %}" class="btn btn-link text-decoration-none text-muted btn-sm">
+                            Cancelar operación
+                        </a>
+                    </div>
+                </form>
+
+                <div class="mt-4 pt-3 border-top border-light">
+                    <div class="d-flex align-items-center justify-content-center text-muted" style="font-size: 0.75rem;">
+                        <i class="fas fa-shield-alt text-success me-2"></i>
+                        <span>Validación segura con SSO institucional</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

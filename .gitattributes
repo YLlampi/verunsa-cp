@@ -1,0 +1,6 @@
+# Forzar final de línea Unix LF para scripts de shell
+*.sh text eol=lf
+
+# Forzar LF para Dockerfiles
+Dockerfile text eol=lf
+docker-compose*.yml text eol=lf

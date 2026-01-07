@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    {#/* Estilo de tarjeta de selección (Radio Card) */#}
+    .candidate-option {
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    {#/* Ocultamos el radio button real */#}
+    .candidate-input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    {#/* Estilo de la tarjeta cuando NO está seleccionada */#}
+    .candidate-card {
+        border: 2px solid #f1f3f5;
+        border-radius: 12px;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        background-color: #fff;
+        transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    .candidate-card:hover {
+        border-color: #dee2e6;
+        background-color: #f8f9fa;
+        transform: translateY(-2px);
+    }
+
+    {#/* Estilo cuando está SELECCIONADO */#}
+    .candidate-input:checked + .candidate-card {
+        border-color: #ffc107; /* Amarillo Warning */
+        background-color: #fff9db; /* Amarillo muy suave */
+        box-shadow: 0 4px 12px rgba(255, 193, 7, 0.2);
+    }
+
+    {#/* Círculo de check */#}
+    .check-circle {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        border: 2px solid #adb5bd;
+        margin-left: auto; /* Empuja a la derecha */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        transition: all 0.2s;
+    }
+
+    .candidate-input:checked + .candidate-card .check-circle {
+        background-color: #ffc107;
+        border-color: #ffc107;
+    }
+
+    {#/* Avatar */#}
+    .avatar-sm {
+        width: 40px;
+        height: 40px;
+        background-color: #e9ecef;
+        color: #495057;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        margin-right: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-5">
+
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+
+                <div class="bg-warning bg-opacity-10 p-4 text-center border-bottom border-warning border-opacity-10">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-white text-warning rounded-circle shadow-sm mb-3" style="width: 64px; height: 64px;">
+                        <i class="fas fa-crown fa-2x"></i>
+                    </div>
+                    <h4 class="fw-bold text-dark mb-1">Ceder el Cargo</h4>
+                    <p class="text-muted small mb-0">
+                        Elige quién será el nuevo responsable de <strong>{{ curso.nombre }}</strong>.
+                    </p>
+                </div>
+
+                <div class="card-body p-4">
+
+                    <div class="alert alert-light border border-secondary border-opacity-10 rounded-3 mb-4 d-flex">
+                        <i class="fas fa-info-circle text-secondary mt-1 me-3"></i>
+                        <small class="text-secondary">
+                            Tú quedarás libre del cargo una vez que el compañero acepte la solicitud. Hasta entonces, sigues siendo el delegado.
+                        </small>
+                    </div>
+
+                    <form method="POST">
+                        {% csrf_token %}
+
+                        <p class="fw-bold text-dark mb-3 small text-uppercase ls-1 text-muted">Candidatos disponibles</p>
+
+                        <div class="d-flex flex-column gap-3 mb-4" style="max-height: 300px; overflow-y: auto;">
+                            {% for insc in candidatos %}
+                                <label class="candidate-option position-relative">
+                                    <input type="radio" name="sucesor_id" value="{{ insc.usuario.id }}" class="candidate-input" required>
+
+                                    <div class="candidate-card">
+                                        <div class="avatar-sm flex-shrink-0">
+                                            {{ insc.usuario.first_name|first|upper }}{{ insc.usuario.last_name|first|upper }}
+                                        </div>
+
+                                        <div class="lh-sm">
+                                            <div class="fw-bold text-dark">{{ insc.usuario.first_name }} {{ insc.usuario.last_name }}</div>
+                                            <div class="small text-muted">{{ insc.usuario.email|truncatechars:25 }}</div>
+                                        </div>
+
+                                        <div class="check-circle">
+                                            <i class="fas fa-check small"></i>
+                                        </div>
+                                    </div>
+                                </label>
+                            {% empty %}
+                                <div class="text-center py-4 border rounded-3 bg-light">
+                                    <i class="fas fa-user-slash text-muted mb-2"></i>
+                                    <p class="small text-muted mb-0">No hay otros alumnos inscritos a quien ceder el cargo.</p>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            {% if candidatos %}
+                                <button type="submit" class="btn btn-warning text-dark fw-bold btn-lg shadow-sm">
+                                    <i class="fas fa-paper-plane me-2"></i> Enviar Solicitud
+                                </button>
+                            {% endif %}
+
+                            <a href="{% url 'frontend:course_detail' curso.id %}" class="btn btn-light text-muted fw-bold">
+                                Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

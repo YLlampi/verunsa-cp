@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+    <style>
+        {#/* Estilo para los inputs modernos (Gris suave -> Blanco) */#}
+        .form-control, .form-select {
+            background-color: #f8f9fa; /* Gris muy claro */
+            border: 1px solid transparent;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            background-color: #ffffff;
+            border-color: #e9ecef;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+        }
+
+        {#/* Ajuste para textarea */#}
+        textarea.form-control {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        {#/* Label más sutil */#}
+        .form-label {
+            color: #495057;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        {#/* Textos de ayuda */#}
+        .form-text {
+            font-size: 0.8rem;
+            color: #adb5bd;
+            margin-top: 0.4rem;
+        }
+
+        {#/* Tarjeta contenedora */#}
+        .card-form {
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.04);
+            border: none;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="container py-5">
+
+        <div class="row justify-content-center mb-4">
+            <div class="col-md-8 col-lg-6">
+                <a href="{% url 'frontend:dashboard' %}" class="text-decoration-none text-muted small fw-bold">
+                    <i class="fas fa-arrow-left me-1"></i> Cancelar y volver
+                </a>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card card-form bg-white">
+                    <div class="card-body p-4 p-md-5">
+
+                        <div class="text-center mb-5">
+                            <div class="d-inline-flex align-items-center justify-content-center bg-danger bg-opacity-10 text-danger rounded-circle mb-3"
+                                 style="width: 60px; height: 60px;">
+                                <i class="fas fa-plus fa-lg"></i>
+                            </div>
+                            <h2 class="h3 fw-bold text-dark">Abrir Curso</h2>
+                            <p class="text-muted">Llena los datos para iniciar la recolección de firmas.</p>
+                        </div>
+
+                        <div class="d-flex align-items-start p-3 mb-4 rounded-3 bg-warning bg-opacity-10 border border-warning border-opacity-25">
+                            <i class="fas fa-crown text-warning mt-1 me-3 fs-5"></i>
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1">Rol de Delegado</h6>
+                                <p class="mb-0 small text-secondary lh-sm">
+                                    Al crear este curso, te conviertes automáticamente en el delegado. Asegúrate de
+                                    tener el <strong>Sílabo Original</strong> a la mano y crea un
+                                    <strong>Grupo de WhatsApp</strong> para compartir el link.
+                                </p>
+                            </div>
+                        </div>
+
+                        <form method="POST" enctype="multipart/form-data">
+                            {% csrf_token %}
+
+                            {% for field in form %}
+                                <div class="mb-4">
+                                    <label class="form-label">
+                                        {{ field.label }}
+                                        {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                                    </label>
+
+                                    {{ field }}
+
+                                    {% if field.errors %}
+                                        <div class="d-flex align-items-center mt-2 text-danger small fw-bold">
+                                            <i class="fas fa-exclamation-circle me-1"></i>
+                                            {{ field.errors.0 }}
+                                        </div>
+                                    {% endif %}
+
+                                    {% if field.help_text %}
+                                        <div class="form-text">
+                                            <i class="fas fa-info-circle me-1 opacity-50"></i>{{ field.help_text }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+
+                            <div class="d-grid mt-5">
+                                <button type="submit" class="btn btn-danger btn-lg rounded-pill shadow-sm fw-bold">
+                                    <i class="fas fa-paper-plane me-2"></i> Abrir Curso
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var inputs = document.querySelectorAll('input, select, textarea');
+            inputs.forEach(function (input) {
+                if (!input.classList.contains('form-check-input')) {
+                    input.classList.add('form-control');
+                }
+            });
+        });
+    </script>
+{% endblock %}

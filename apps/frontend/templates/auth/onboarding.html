@@ -1,0 +1,292 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+    <style>
+        {#/* Fondo sutil */#}
+        body {
+            background-color: #f4f6f8;
+        }
+
+        {#/* Tarjeta principal */#}
+        .card-onboarding {
+            border: none;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.05);
+        }
+
+        {#/* Inputs modernos con iconos integrados */#}
+        .input-group-text {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-right: none;
+            border-top-left-radius: 12px;
+            border-bottom-left-radius: 12px;
+            color: #6c757d;
+            padding-left: 1.2rem;
+            z-index: 2;
+        }
+
+        .form-control, .form-select {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-left: none;
+            border-top-right-radius: 12px;
+            border-bottom-right-radius: 12px;
+            padding: 0.8rem 1rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        {#/* Efecto Focus: Todo el grupo se ilumina */#}
+        .form-control:focus, .form-select:focus {
+            background-color: #fff;
+            border-color: #dee2e6;
+            box-shadow: none;
+        }
+
+        .form-control:focus + .input-group-text,
+        .input-group:focus-within .input-group-text {
+            background-color: #fff;
+            border-color: #dee2e6;
+            color: #8B0000;
+        }
+
+        .form-control:focus, .input-group:focus-within .form-control {
+            border-color: #dee2e6;
+            background-color: #fff;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        {#/* Avatar gigante */#}
+        .welcome-avatar {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #8B0000 0%, #dc3545 100%);
+            color: white;
+            font-size: 2.5rem;
+            font-weight: bold;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem auto;
+            box-shadow: 0 10px 20px rgba(139, 0, 0, 0.2);
+        }
+
+
+        {#///////////////////////////////////////////#}
+
+
+        .form-control {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-left: none;
+            border-top-right-radius: 12px;
+            border-bottom-right-radius: 12px;
+            padding: 0.8rem 1rem;
+        }
+
+        {#/* --- PERSONALIZACIÓN DE TOMSELECT PARA QUE PAREZCA UN INPUT NATIVO --- */#}
+
+        {#/* El contenedor principal */#}
+        .ts-wrapper.form-select {
+            border: none;
+            padding: 0;
+            background: transparent !important;
+            box-shadow: none !important;
+        }
+
+        {#/* El input real de TomSelect */#}
+        .ts-control {
+            display: flex !important;
+            align-items: center;
+            flex-wrap: nowrap !important;
+            white-space: nowrap;
+            overflow: hidden;
+
+            background-color: #f8f9fa !important;
+            border: 1px solid #e9ecef !important;
+            border-left: none !important;
+            border-radius: 0 12px 12px 0 !important;
+            padding: 0.8rem 1rem !important;
+            height: auto !important;
+            font-size: 1rem;
+            box-shadow: none !important;
+            min-height: calc(3rem + 2px);
+            transition: all 0.2s;
+            transition: border-color 0.2s;
+        }
+
+        {#/* Al hacer foco */#}
+        .ts-wrapper.focus .ts-control {
+            background-color: #fff !important;
+            border-color: #dee2e6 !important;
+        }
+
+        {#/* El menú desplegable */#}
+        .ts-dropdown {
+            border-radius: 12px;
+            border: 1px solid #f0f0f0;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-top: 5px;
+            padding: 5px;
+            z-index: 1000;
+        }
+
+        {#/* Opciones del menú */#}
+        .ts-dropdown .option {
+            border-radius: 8px;
+            padding: 8px 12px;
+        }
+
+        .ts-dropdown .active {
+            background-color: #fff0f0;
+            color: #8B0000;
+        }
+
+        {#/* Títulos de Facultades (Optgroups) */#}
+        .ts-dropdown .optgroup-header {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #adb5bd;
+            font-weight: 700;
+            padding: 10px 12px 5px 12px;
+        }
+
+        .input-group .ts-wrapper {
+            flex: 1 1 auto;
+            width: 1% !important;
+            min-width: 0;
+        }
+
+        .ts-control > input {
+            flex: 1 1 auto;
+            min-width: 4px;
+            width: auto !important;
+            display: inline-block !important;
+            margin: 0 !important;
+        }
+
+        .ts-control .item {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding-right: 5px;
+        }
+
+    </style>
+{% endblock %}
+
+
+{% block content %}
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+
+                <div class="text-center mb-4">
+                    <p class="small text-muted mb-2 fw-bold text-uppercase ls-1">Configuración de cuenta</p>
+                    <div class="progress" style="height: 6px; border-radius: 10px;">
+                        <div class="progress-bar bg-danger" role="progressbar"
+                             style="width: 80%; border-radius: 10px;"></div>
+                    </div>
+                </div>
+
+                <div class="card card-onboarding bg-white p-4 p-md-5">
+
+                    <div class="text-center mb-4">
+                        <div class="welcome-avatar">
+                            {{ user.first_name|first|default:user.email|first|upper }}
+                        </div>
+                        <h2 class="h4 fw-bold text-dark mb-2">¡Hola, {{ user.first_name }}!</h2>
+                        <p class="text-muted small">Validemos tus datos académicos.</p>
+                    </div>
+
+                    <form method="POST">
+                        {% csrf_token %}
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small text-secondary ps-2">CUI</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+                                <input type="text"
+                                       name="codigo_alumno"
+                                       class="form-control"
+                                       placeholder=""
+                                       maxlength="8"
+                                       minlength="8"
+                                       pattern="[0-9]{8}"
+                                       title="Debe contener exactamente 8 dígitos numéricos"
+                                       required>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small text-secondary ps-2">WhatsApp</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fab fa-whatsapp"></i></span>
+                                <input type="tel"
+                                       name="celular"
+                                       class="form-control"
+                                       placeholder=""
+                                       maxlength="9"
+                                       minlength="9"
+                                       pattern="[0-9]{9}"
+                                       inputmode="numeric"
+                                       title="Ingrese un número de celular de 9 dígitos"
+                                       required>
+                            </div>
+                        </div>
+
+                        <div class="mb-5">
+                            <label class="form-label fw-bold small text-secondary ps-2">Escuela Profesional</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-graduation-cap"></i></span>
+
+                                <select name="escuela_id" id="select-escuela" required>
+                                    <option value="">Escribe para buscar tu carrera...</option>
+                                    {% for facultad in facultades %}
+                                        <optgroup label="{{ facultad.nombre }}">
+                                            {% for escuela in facultad.escuelas.all %}
+                                                <option value="{{ escuela.id }}">{{ escuela.nombre }}</option>
+                                            {% endfor %}
+                                        </optgroup>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-text small ps-2 mt-1">
+                                <i class="fas fa-search me-1"></i> Puedes escribir el nombre de tu escuela.
+                            </div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-danger btn-lg rounded-pill shadow-sm fw-bold py-3">
+                                Completar Registro <i class="fas fa-arrow-right ms-2"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            new TomSelect("#select-escuela", {
+                create: false,
+                sortField: {
+                    field: "text",
+                    direction: "asc"
+                },
+                placeholder: "Escribe para buscar...",
+                render: {
+                    no_results: function (data, escape) {
+                        return '<div class="no-results p-2 text-muted small">No encontramos esa escuela</div>';
+                    }
+                }
+            });
+        });
+    </script>
+{% endblock %}

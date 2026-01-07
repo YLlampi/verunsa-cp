@@ -1,0 +1,352 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    {#/* Estilos para Avatares Generados */#}
+    .avatar-circle {
+        width: 40px;
+        height: 40px;
+        background-color: #f8f9fa;
+        color: #8B0000;
+        border: 1px solid #dee2e6;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.9rem;
+        margin-right: 12px;
+    }
+
+    {#/* Tarjetas Modernas */#}
+    .card-modern {
+        border: 1px solid #e9ecef;
+        border-radius: 16px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+
+    {#/* Botón de Compartir Customizado */#}
+    .share-btn {
+        background-color: #f8f9fa;
+        border: 1px dashed #ced4da;
+        transition: all 0.2s;
+        width: 100%;
+        justify-content: center;
+    }
+    .share-btn:hover {
+        background-color: #e9ecef;
+        border-color: #adb5bd;
+    }
+
+    {#/* Input de archivo disfrazado */#}
+    .file-upload-wrapper .btn {
+        border-radius: 50px;
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+
+    {#/* Tabla limpia */#}
+    .table-hover tbody tr:hover {
+        background-color: #fcfcfc;
+    }
+    .table-row-active {
+        background-color: #fff8f8 !important; /* Rojo muy suave para mi fila */
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <div class="container py-4">
+
+        <a href="{% url 'frontend:dashboard' %}" class="text-decoration-none text-muted fw-bold mb-4 d-inline-block hover-danger">
+            <i class="fas fa-arrow-left me-2"></i> Volver al Muro
+        </a>
+
+        <div class="row g-4">
+
+            <div class="col-lg-4">
+                <div class="card card-modern sticky-top bg-white" style="top: 2rem; z-index: 10;">
+                    <div class="card-body p-4">
+
+                        <div class="mb-4">
+                            <h1 class="h3 fw-bold text-dark mb-2">{{ curso.nombre }}</h1>
+                            <div class="d-flex flex-wrap gap-2">
+                                <span class="badge bg-dark rounded-pill fw-normal px-3">{{ curso.creditos }} Créditos</span>
+                                <span class="badge bg-light text-dark border rounded-pill fw-normal px-3">{{ curso.escuela.nombre }}</span>
+                            </div>
+                        </div>
+
+                        {% if curso.descripcion %}
+                            <div class="bg-light p-3 rounded-3 mb-4 border-start border-3 border-danger">
+                                <p class="mb-0 text-secondary small">{{ curso.descripcion }}</p>
+                            </div>
+                        {% endif %}
+
+                        <ul class="list-unstyled d-grid gap-3 mb-4">
+                            <li class="d-flex align-items-center text-dark">
+                                <div class="bg-light p-2 rounded-circle me-3">
+                                    <i class="fas fa-user-tie text-danger"></i>
+                                </div>
+                                <div>
+                                    <small class="text-muted d-block lh-1">Delegado</small>
+                                    <span class="fw-bold">{{ curso.creador.first_name }}</span>
+                                </div>
+                            </li>
+                            <li class="d-flex align-items-center text-dark">
+                                <div class="bg-light p-2 rounded-circle me-3">
+                                    <i class="fas fa-calendar-alt text-danger"></i>
+                                </div>
+                                <div>
+                                    <small class="text-muted d-block lh-1">Creado</small>
+                                    <span class="fw-bold">{{ curso.created_at|date:"d M, Y" }}</span>
+                                </div>
+                            </li>
+
+                            {% if is_inscrito %}
+                                <li>
+                                    <a href="{{ curso.whatsapp_link }}" target="_blank" class="btn btn-success btn-sm w-100 fw-bold rounded-pill">
+                                        <i class="fab fa-whatsapp me-2"></i> Grupo de WhatsApp
+                                    </a>
+                                </li>
+                            {% endif %}
+
+                            {% if curso.syllabus %}
+                                <li>
+                                    <a href="{{ curso.syllabus.url }}" target="_blank" class="btn btn-outline-danger btn-sm w-100 fw-bold rounded-pill">
+                                        <i class="fas fa-file-pdf me-2"></i> Ver Sílabo
+                                    </a>
+                                </li>
+                            {% endif %}
+
+                            <li>
+                                <button id="btnCompartir" class="btn share-btn text-muted small py-2 rounded-3">
+                                    <span>Compartir este curso con tus amigos</span>
+                                    <i class="fa-regular fa-copy ms-2"></i>
+                                </button>
+                            </li>
+                        </ul>
+
+                        <hr class="text-muted opacity-25">
+
+                        <div class="mt-4">
+                            {% if curso.creador == request.user %}
+                                <div class="alert alert-light border border-warning d-flex align-items-center p-2 mb-3 rounded-3">
+                                    <i class="fas fa-crown text-warning fa-lg me-3 ms-2"></i>
+                                    <span class="small fw-bold text-dark">Eres el Delegado</span>
+                                </div>
+
+                                {% if curso.delegado_pendiente %}
+                                    <div class="alert alert-warning small border-0 shadow-sm rounded-3">
+                                        <i class="fas fa-hourglass-half me-1"></i>
+                                        Esperando respuesta de <strong>{{ curso.delegado_pendiente.first_name }}</strong>...
+                                    </div>
+                                {% else %}
+                                    <div class="d-grid gap-2">
+                                        {% if alumnos|length > 1 %}
+                                            <a href="{% url 'frontend:nominate_delegado' curso.id %}"
+                                               class="btn btn-outline-warning text-dark btn-sm fw-bold">
+                                                <i class="fas fa-exchange-alt me-1"></i> Ceder Cargo y Salir
+                                            </a>
+                                        {% else %}
+                                            <form action="{% url 'frontend:leave_course' curso.id %}" method="POST"
+                                                  onsubmit="return confirm('¿Al salir se eliminará el curso porque estás solo. Continuar?');">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-outline-secondary btn-sm w-100">
+                                                    <i class="fas fa-trash-alt me-1"></i> Eliminar Curso y Salir
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+
+                            {% else %}
+                                <div class="d-grid gap-2">
+                                    {% if is_inscrito %}
+                                        <form action="{% url 'frontend:leave_course' curso.id %}" method="POST">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-outline-secondary btn-sm w-100">
+                                                <i class="fas fa-sign-out-alt me-1"></i> Salirme
+                                            </button>
+                                        </form>
+                                    {% else %}
+                                        <form action="{% url 'frontend:join_course' curso.id %}" method="POST">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-danger w-100 shadow fw-bold py-2">
+                                                <i class="fas fa-user-plus me-2"></i> Unirme al grupo
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="card card-modern border-0 h-100">
+                    <div class="card-body p-0">
+
+                        <div class="p-4 border-bottom">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="fw-bold mb-0 text-dark">Estudiantes Inscritos</h5>
+                                <span class="badge bg-dark rounded-pill px-3 py-2">
+                                    {{ alumnos|length }} / {{ curso.minimo_alumnos }}
+                                </span>
+                            </div>
+
+                            <div class="progress rounded-pill bg-light" style="height: 10px;">
+                                <div class="progress-bar {% if curso.progreso_porcentaje >= 100 %}bg-success{% else %}bg-danger{% endif %} rounded-pill"
+                                     role="progressbar"
+                                     style="width: {{ curso.progreso_porcentaje }}%">
+                                </div>
+                            </div>
+                            <div class="text-end mt-1">
+                                <small class="text-muted fw-bold">{{ curso.progreso_porcentaje }}%</small>
+                            </div>
+                        </div>
+
+                        {% if alumnos %}
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="bg-light text-secondary small text-uppercase">
+                                    <tr>
+                                        <th class="ps-4 py-3 border-0">Estudiante</th>
+                                        <th class="py-3 border-0">CUI</th>
+                                        <th class="py-3 border-0">Escuela</th>
+                                        <th class="py-3 border-0">Documento</th>
+                                        {% if es_delegado %}
+                                            <th class="text-center py-3 border-0"><i class="fab fa-whatsapp text-success fs-5"></i></th>
+                                        {% endif %}
+                                        <th class="pe-4 py-3 border-0 text-end">Rol</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for alumno in alumnos %}
+                                        <tr class="{% if alumno.es_mi_fila %}table-row-active{% endif %}">
+
+                                            <td class="ps-4 py-3">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="avatar-circle flex-shrink-0">
+                                                        {{ alumno.nombre|first|upper }}
+                                                    </div>
+                                                    <div class="lh-sm">
+                                                        <div class="fw-bold text-dark">{{ alumno.nombre }}</div>
+                                                        <div class="text-muted small">{{ alumno.apellido }}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+
+                                            <td class="font-monospace text-secondary fw-bold">{{ alumno.cui }}</td>
+
+                                            <td>
+                                                <span class="badge bg-light text-secondary border fw-normal text-wrap text-start">
+                                                    {{ alumno.escuela_nombre }}
+                                                </span>
+                                            </td>
+
+                                            <td>
+                                                {% if alumno.documento %}
+                                                    <div class="d-flex align-items-center">
+                                                        {% if es_delegado or alumno.es_mi_fila %}
+                                                            <a href="{{ alumno.documento.url }}" target="_blank"
+                                                               class="btn btn-sm btn-outline-success rounded-pill px-3 me-2">
+                                                               <i class="fas fa-check me-1"></i> Ver
+                                                            </a>
+                                                        {% else %}
+                                                            <span class="text-success small fw-bold"><i class="fas fa-check-circle me-1"></i> Entregado</span>
+                                                        {% endif %}
+
+                                                        {% if alumno.es_mi_fila %}
+                                                            <form action="{% url 'frontend:delete_doc' alumno.inscripcion_id %}"
+                                                                  method="POST" class="d-inline">
+                                                                {% csrf_token %}
+                                                                <button type="submit"
+                                                                        class="btn btn-link text-danger p-0 ms-1 opacity-50 hover-opacity-100" title="Eliminar archivo">
+                                                                    <i class="fas fa-times-circle"></i>
+                                                                </button>
+                                                            </form>
+                                                        {% endif %}
+                                                    </div>
+                                                {% else %}
+                                                    {% if alumno.es_mi_fila %}
+                                                        <form action="{% url 'frontend:upload_doc' alumno.inscripcion_id %}"
+                                                              method="POST" enctype="multipart/form-data"
+                                                              class="d-flex file-upload-wrapper">
+                                                            {% csrf_token %}
+                                                            <label class="btn btn-sm btn-danger rounded-pill px-3 shadow-sm"
+                                                                   style="cursor: pointer;">
+                                                                <i class="fas fa-upload me-1"></i> Subir
+                                                                <input type="file" name="documento" hidden
+                                                                       onchange="this.form.submit()">
+                                                            </label>
+                                                        </form>
+                                                    {% else %}
+                                                        <span class="text-muted small fst-italic">Pendiente</span>
+                                                    {% endif %}
+                                                {% endif %}
+                                            </td>
+
+                                            {% if es_delegado %}
+                                                <td class="text-center">
+                                                    {% if alumno.wa_link and not alumno.es_mi_fila %}
+                                                        <a href="{{ alumno.wa_link }}" target="_blank"
+                                                           class="btn btn-sm btn-success rounded-circle shadow-sm" style="width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center;">
+                                                            <i class="fab fa-whatsapp"></i>
+                                                        </a>
+                                                    {% elif alumno.es_mi_fila %}
+                                                        <small class="text-muted fw-bold">Yo</small>
+                                                    {% else %}
+                                                        <span class="text-muted opacity-25">&bull;</span>
+                                                    {% endif %}
+                                                </td>
+                                            {% endif %}
+
+                                            <td class="pe-4 text-end">
+                                                {% if alumno.es_delegado_rol %}
+                                                    <span class="badge bg-warning text-dark border border-warning rounded-pill">
+                                                        <i class="fas fa-crown me-1 small"></i> Delegado
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge bg-light text-muted border rounded-pill fw-normal">Estudiante</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-users-slash fa-3x text-light mb-3"></i>
+                                <p class="text-muted">Nadie se ha inscrito aún. ¡Sé el primero!</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("btnCompartir").addEventListener("click", function () {
+            const url = window.location.href;
+
+            const texto = `{{curso.nombre}} - Curso abierto. Únete haciendo clic en el enlace:
+${url}`;
+
+            navigator.clipboard.writeText(texto).then(() => {
+                this.classList.remove('text-muted');
+                this.classList.add('text-success', 'border-success', 'bg-success', 'bg-opacity-10');
+                this.innerHTML = '<i class="fa-solid fa-check me-2"></i> Enlace copiado';
+
+                setTimeout(() => {
+                    this.classList.remove('text-success', 'border-success', 'bg-success', 'bg-opacity-10');
+                    this.classList.add('text-muted');
+                    this.innerHTML = '<span>Compartir este curso con tus amigos</span> <i class="fa-regular fa-copy ms-2"></i>';
+                }, 2000);
+            });
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    {#/* Modernización sutil de las tarjetas */#}
+    .course-card {
+        border: none; /* Quitamos bordes grises antiguos */
+        background-color: #fff;
+        border-radius: 1rem; /* Bordes más redondeados (Modern UI) */
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.02); /* Sombra base muy sutil */
+    }
+
+    {#/* Efecto "Lift" al pasar el mouse */#}
+    .course-card:hover {
+        transform: translateY(-5px); /* Se eleva */
+        box-shadow: 0 15px 30px rgba(0,0,0,0.1); /* Sombra difusa moderna */
+    }
+
+    {#/* Barra de búsqueda moderna */#}
+    .search-modern {
+        border-radius: 50px;
+        padding: 0.7rem 1.2rem;
+        border: 1px solid #e9ecef;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    }
+    .search-modern:focus {
+        border-color: #8B0000; /* Rojo UNSA al enfocar */
+        box-shadow: 0 0 0 0.2rem rgba(139, 0, 0, 0.1);
+    }
+
+    {#/* Barra de progreso redondeada */#}
+    .progress-round {
+        border-radius: 50px;
+        background-color: #f1f3f5;
+        overflow: hidden;
+    }
+
+    {#/* Badges con mejor padding */#}
+    .badge-modern {
+        padding: 0.5em 0.8em;
+        border-radius: 6px;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <div class="container py-4">
+
+        {% for curso in cursos %}
+            {% if curso.delegado_pendiente == request.user %}
+                <div class="alert alert-warning border-0 shadow-sm rounded-3 d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 p-3">
+                    <div class="d-flex align-items-center mb-3 mb-md-0">
+                        <div class="bg-white p-2 rounded-circle text-warning shadow-sm me-3">
+                            <i class="fas fa-crown fa-lg"></i>
+                        </div>
+                        <div>
+                            <h5 class="h6 fw-bold mb-1 text-dark">Solicitud de Delegado</h5>
+                            <p class="mb-0 small text-dark opacity-75">
+                                Te han nominado para ser delegado de <strong>{{ curso.nombre }}</strong>.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <a href="{% url 'frontend:respond_nomination' curso.id 'aceptar' %}"
+                           class="btn btn-success fw-bold px-4 rounded-pill me-1">Aceptar</a>
+                        <a href="{% url 'frontend:respond_nomination' curso.id 'rechazar' %}"
+                           class="btn btn-light text-danger fw-bold border px-4 rounded-pill">Rechazar</a>
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-end mb-5 gap-3">
+            <div class="col-lg-6">
+                <h1 class="h3 fw-bold text-dark mb-2">Muro de {{ user.escuela.nombre }}</h1>
+                <p class="text-muted mb-0 position-relative" style="padding-left: 12px;">
+                    <span class="position-absolute start-0 top-0 h-100 bg-danger rounded-pill" style="width: 3px;"></span>
+                    Cursos propuestos para este Semestre C
+                </p>
+            </div>
+
+            <div class="d-flex w-100 w-md-auto gap-2" style="max-width: 500px;">
+                <div class="position-relative flex-grow-1">
+                    <i class="fas fa-search text-muted position-absolute" style="top: 50%; left: 15px; transform: translateY(-50%);"></i>
+                    <input type="text"
+                           id="courseSearchInput"
+                           class="form-control search-modern ps-5"
+                           placeholder="Buscar curso..."
+                           autocomplete="off">
+                </div>
+
+                <a href="{% url 'frontend:create_course' %}" class="btn btn-danger shadow-sm rounded-pill px-4 d-flex align-items-center">
+                    <i class="fas fa-plus me-2"></i> <span>Abrir</span>
+                </a>
+            </div>
+        </div>
+
+        {% if cursos %}
+            <div class="row g-4" id="coursesContainer">
+                {% for curso in cursos %}
+                    <div class="col-md-4 course-item">
+                        <div class="card h-100 course-card">
+                            <div class="card-body p-4 d-flex flex-column">
+
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <h5 class="card-title fw-bold text-dark mb-0 me-2 lh-sm">
+                                        <a href="{% url 'frontend:course_detail' curso.id %}"
+                                           class="text-decoration-none text-dark stretched-link course-name">
+                                            {{ curso.nombre }}
+                                        </a>
+                                    </h5>
+                                    <span class="badge bg-light text-dark border badge-modern flex-shrink-0">
+                                        {{ curso.creditos }} crd
+                                    </span>
+                                </div>
+
+                                {% if curso.is_equivalente %}
+                                    <div class="mb-3">
+                                        <span class="badge bg-warning text-dark badge-modern w-100 text-start text-wrap lh-sm">
+                                            <i class="fas fa-exchange-alt me-1 opacity-50"></i>
+                                            Se dicta en {{ curso.escuela.nombre }}
+                                        </span>
+                                    </div>
+                                {% endif %}
+
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center text-secondary me-2" style="width: 24px; height: 24px; font-size: 0.7rem;">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <p class="small text-muted mb-0 text-truncate">
+                                        Delegado: <span class="fw-bold">{{ curso.creador.first_name|default:curso.creador.email|truncatechars:20 }}</span>
+                                    </p>
+                                </div>
+
+                                <div class="mt-auto">
+                                    <div class="d-flex justify-content-between small mb-1 fw-bold">
+                                        <span class="text-muted">Progreso</span>
+                                        <span class="{% if curso.progreso_porcentaje >= 100 %}text-success{% else %}text-danger{% endif %}">
+                                            {{ curso.total_inscritos }} / {{ curso.minimo_alumnos }}
+                                        </span>
+                                    </div>
+
+                                    <div class="progress progress-round mb-4" style="height: 10px;">
+                                        <div class="progress-bar {% if curso.progreso_porcentaje >= 100 %}bg-success{% else %}bg-danger{% endif %}"
+                                             role="progressbar"
+                                             style="width: {{ curso.progreso_porcentaje }}%">
+                                        </div>
+                                    </div>
+
+                                    <div class="d-grid">
+                                        {% if curso.is_inscrito %}
+                                            <form action="{% url 'frontend:course_detail' curso.id %}" method="POST">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-outline-secondary w-100 rounded-pill fw-medium py-2"
+                                                        style="position: relative; z-index: 2;">
+                                                    <i class="fas fa-eye me-2"></i> Ver Curso
+                                                </button>
+                                            </form>
+                                        {% else %}
+                                            <form action="{% url 'frontend:course_detail' curso.id %}" method="POST">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-danger w-100 shadow-sm rounded-pill fw-bold py-2"
+                                                        style="position: relative; z-index: 2;">
+                                                    <i class="fas fa-pen me-2"></i> Inscribirme
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card-footer bg-white border-top-0 pt-0 pb-3">
+                                <small class="text-muted opacity-50 d-block text-center" style="font-size: 0.7rem;">
+                                    Propuesto el {{ curso.created_at|date:"d M, Y" }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div id="noResultsMessage" class="text-center py-5 d-none">
+                <i class="fas fa-search fa-3x text-light mb-3 text-secondary opacity-50"></i>
+                <h4 class="text-muted">No se encontraron cursos</h4>
+                <p class="text-muted">Intenta con otro nombre.</p>
+            </div>
+
+        {% else %}
+            <div class="text-center py-5">
+                <div class="mb-3">
+                    <i class="fas fa-clipboard-list fa-4x text-danger opacity-25"></i>
+                </div>
+                <h4 class="fw-bold text-dark">Aún no hay cursos propuestos</h4>
+                <p class="text-muted">Sé el primero en organizar a tu gente.</p>
+                <a href="{% url 'frontend:create_course' %}" class="btn btn-danger rounded-pill px-4 mt-2 shadow">
+                    Abrir primer curso
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('courseSearchInput');
+            const courseItems = document.querySelectorAll('.course-item');
+            const noResultsMsg = document.getElementById('noResultsMessage');
+
+            if (searchInput) {
+                searchInput.addEventListener('input', function (e) {
+                    const searchTerm = e.target.value.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                    let visibleCount = 0;
+
+                    courseItems.forEach(function (item) {
+                        const nameElement = item.querySelector('.course-name');
+                        const courseName = nameElement.textContent.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+                        if (courseName.includes(searchTerm)) {
+                            item.classList.remove('d-none');
+                            visibleCount++;
+                        } else {
+                            item.classList.add('d-none');
+                        }
+                    });
+
+                    if (visibleCount === 0 && courseItems.length > 0) {
+                        noResultsMsg.classList.remove('d-none');
+                    } else {
+                        noResultsMsg.classList.add('d-none');
+                    }
+                });
+            }
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,260 @@
+{% load static %}
+{% load socialaccount %}
+<!DOCTYPE html>
+<html lang="es" class="h-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="icon" href="{% static 'resources/cropped-LogoUNSAFav-32x32.png' %}"
+          sizes="32x32"/>
+    <link rel="icon" href="{% static 'resources/cropped-LogoUNSAFav-192x192.png' %}"
+          sizes="192x192"/>
+
+    <title>{% block title %}UNSA Semestre C{% endblock %}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+          rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --unsa-red: #8B0000;
+            --unsa-dark: #600000;
+            --unsa-accent: #b91c1c;
+            --bg-light: #f8fafc;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            font-family: 'Inter', sans-serif;
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        .navbar-unsa {
+            background: linear-gradient(135deg, var(--unsa-red) 0%, var(--unsa-dark) 100%);
+            padding: 0.75rem 0;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-brand span {
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            font-size: 1.35rem;
+            color: white;
+        }
+
+        .nav-link {
+            font-weight: 500;
+            font-size: 0.95rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .dropdown-menu {
+            border: none;
+            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.15);
+            border-radius: 16px;
+            padding: 0.75rem;
+            margin-top: 10px;
+            animation: slideIn 0.2s ease forwards;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .dropdown-item {
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .dropdown-item:hover {
+            background-color: #f1f5f9;
+            color: var(--unsa-red);
+        }
+
+        .dropdown-header {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+        }
+
+        .user-avatar-sm {
+            width: 36px;
+            height: 36px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: white;
+        }
+
+        .alert {
+            border: none;
+            border-left: 5px solid;
+            border-radius: 12px;
+            background: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .alert-error {
+            border-color: #ef4444;
+            color: #991b1b;
+        }
+
+        .alert-success {
+            border-color: #22c55e;
+            color: #166534;
+        }
+
+        .alert-info {
+            border-color: #3b82f6;
+            color: #1e40af;
+        }
+
+        footer {
+            background-color: white;
+            border-top: 1px solid #e2e8f0;
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="d-flex flex-column h-100">
+
+<nav class="navbar navbar-expand-lg navbar-dark navbar-unsa shadow sticky-top">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center" href="/">
+            <img src="{% static 'resources/logonuevoblancounsa.png' %}"
+                 alt="Logo UNSA" style="height: 35px;" class="me-2">
+            <span>Semestre C</span>
+        </a>
+
+        <button class="navbar-toggler border-0 p-2" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarContent"
+                aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation"
+                style="background: rgba(255,255,255,0.1); border-radius: 8px;">
+            <span class="navbar-toggler-icon" style="width: 1.2em; height: 1.2em;"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarContent">
+            <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center pt-3 pt-lg-0">
+                {% if user.is_authenticated %}
+                    <li class="nav-item me-lg-2">
+                        <a class="nav-link text-white" href="{% url 'frontend:dashboard' %}">
+                            <i class="fas fa-columns me-2 opacity-75"></i>Muro
+                        </a>
+                    </li>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-white d-flex align-items-center" href="#"
+                           id="navbarDropdown"
+                           role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <div class="user-avatar-sm">
+                                {{ user.first_name|first|default:user.email|first|upper }}
+                            </div>
+                            <span class="fw-medium">{{ user.first_name|default:user.email|truncatechars:15 }}</span>
+                        </a>
+
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                            <li>
+                                <span class="dropdown-header px-3">
+                                    {{ user.escuela.nombre|default:"Sin Escuela" }}
+                                </span>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider my-1">
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'frontend:dashboard' %}">
+                                    <i class="fas fa-tachometer-alt me-2 text-muted" style="width:20px;"></i> Dashboard
+                                </a>
+                            </li>
+                            <li>
+                                <form method="post" action="{% url 'account_logout' %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item text-danger">
+                                        <i class="fas fa-sign-out-alt me-2" style="width:20px;"></i> Cerrar Sesión
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
+                        <a class="btn btn-light text-danger fw-bold shadow-sm px-4 rounded-pill w-100 w-lg-auto"
+                           href="{% provider_login_url 'google' %}">
+                            <i class="fab fa-google me-2"></i> Ingresar con UNSA
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4 position-relative" style="z-index: 1050;">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show d-flex align-items-center py-3"
+                 role="alert">
+                {% if message.tags == 'error' %}
+                    <i class="fas fa-exclamation-circle me-3 fs-4 text-danger"></i>
+                {% elif message.tags == 'success' %}
+                    <i class="fas fa-check-circle me-3 fs-4 text-success"></i>
+                {% endif %}
+                <div class="fw-medium">{{ message }}</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
+
+<main class="flex-shrink-0">
+    {% block content %}
+    {% endblock %}
+</main>
+
+<footer class="footer mt-auto py-4 text-center bg-white">
+    <div class="container">
+        <p class="mb-0 text-muted small">
+            &copy; {% now "Y" %} <strong>verunsa</strong> &bull; Comunidad Universitaria UNSA.
+        </p>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% block extra_js %}{% endblock %}
+
+</body>
+</html>

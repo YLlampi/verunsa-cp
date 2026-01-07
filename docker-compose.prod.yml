@@ -1,0 +1,32 @@
+services:
+  web:
+    build: .
+    command: gunicorn verunsa.wsgi:application --bind 0.0.0.0:8000 --workers 3 --log-level debug --access-logfile - --error-logfile -
+    ports:
+      - "127.0.0.1:8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - redis
+    environment:
+      - DJANGO_ENV=production
+    volumes: []
+
+  celery:
+    build: .
+    command: celery -A verunsa worker -l info --concurrency=2
+    env_file:
+      - .env
+    depends_on:
+      - redis
+    environment:
+      - DJANGO_ENV=production
+    volumes: []
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:
